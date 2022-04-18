@@ -28,29 +28,43 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
       body: controller.obx(
-        (state) => ListView.separated(
-          padding: const EdgeInsets.all(10),
-          itemBuilder: (_, index) {
-            return ListTile(
-              title: Text(
-                state![index].title.capitalizeFirst!,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: Text(state[index].body.capitalizeFirst!),
-              ),
-            );
-          },
-          separatorBuilder: (_, index) {
-            return const Divider(
-              color: Colors.grey,
-            );
-          },
-          itemCount: state!.length,
-          physics: const BouncingScrollPhysics(),
+        (state) => Obx(
+          () => ListView.separated(
+            controller: controller.scrollController,
+            itemCount: state!.isNotEmpty ? controller.limit.value + 1 : 0,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(10),
+            itemBuilder: (_, index) {
+              if ((index != controller.limit.value)) {
+                return ListTile(
+                  title: Text(
+                    controller.dataList[index].title.capitalizeFirst!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child:
+                        Text(controller.dataList[index].body.capitalizeFirst!),
+                  ),
+                );
+              } else {
+                return Obx(
+                  () => Center(
+                    child: controller.showLoading.value
+                        ? const CircularProgressIndicator()
+                        : const Text("No More Data"),
+                  ),
+                );
+              }
+            },
+            separatorBuilder: (_, index) {
+              return const Divider(
+                color: Colors.grey,
+              );
+            },
+          ),
         ),
         onLoading: const Center(child: CircularProgressIndicator()),
         onError: (error) => Center(child: Text(error.toString())),
