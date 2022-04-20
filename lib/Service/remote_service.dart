@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:getx_dio/Model/list_postmodel.dart';
 import 'package:getx_dio/Model/post_model.dart';
 
 class RemoteService {
@@ -9,15 +10,19 @@ class RemoteService {
 
   RemoteService(this.dio);
 
-  Future<List<PostModel>> getAllPost() async {
-    List<PostModel> data = [];
-    final response = await dio.get(url);
-    if (response.statusCode == 200) {
-      for (var i = 0; i < response.data.length; i++) {
-        data.add(PostModel.fromMap(response.data[i]));
+  getAllPost(int page) async {
+    const int _limit = 10;
+
+    return await dio.get("$url?_limit=$_limit&_page=$page").then((values) {
+      if (values.statusCode == 200) {
+        List<PostModel> data = [];
+        values.data.forEach((eachValue) {
+           data.add(PostModel.fromMap(eachValue));
+        });
+
+        return ListPage(grandTotalCount: values.data.length, itemList: data);
       }
-    }
-    return data;
+    });
   }
 
   Future<void> postData() async {
